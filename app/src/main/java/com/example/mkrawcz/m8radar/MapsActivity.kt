@@ -30,7 +30,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private lateinit var mSensorManager: SensorManager
     lateinit var selfLocation: Location
 
-    private var selfMarker: Marker? = null
+    var selfMarker: Marker? = null
     private val radarClient: RadarClient
 
     companion object {
@@ -71,7 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
+        //ignored
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -86,7 +86,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_ID)
         }
 
-        val myLocationCallback = MyLocationCallback(this)
+        val myLocationCallback = LocationUpdateCallback(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location -> initializeSelfMarker(location) }
