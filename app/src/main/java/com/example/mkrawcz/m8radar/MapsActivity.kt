@@ -29,9 +29,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private lateinit var gMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mSensorManager: SensorManager
+    private lateinit var locationUpdateCallback: LocationUpdateCallback
 
     private val radarClient: RadarClient = MockRadarClient()
-    private val locationUpdateCallback = LocationUpdateCallback(this)
 
     var selfMarker: Marker? = null
 
@@ -49,7 +49,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         mSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
@@ -65,7 +65,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     override fun onSensorChanged(event: SensorEvent?) {
         val degree = Math.round(event!!.values[0]).toFloat()
-        selfMarker?.rotation = degree
+        self_marker?.rotation = degree
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -74,9 +74,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     override fun onMapReady(googleMap: GoogleMap) {
         gMap = googleMap
-
         setupMap()
         setupLocation()
+        locationUpdateCallback = LocationUpdateCallback(gMap)
     }
 
     private fun setupLocation() {
@@ -84,9 +84,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_ID)
         } else {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-            fusedLocationClient.lastLocation.addOnSuccessListener { location -> initializeSelfMarker(location) }
+            fusedLocationClient.lastLocation.addOnSuccessListener { location -> initializePosition(location) }
             fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationUpdateCallback, mainLooper)
         }
+    }
+
+    private fun initializePosition(location: Location) {
+        animateToPosition(location.toLatLng(), DefaultZoom)
+        black_overlay.animate().alpha(0f)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -99,7 +104,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         val position = location.toLatLng()
         createSelfMarker(position)
         animateToPosition(position, DefaultZoom)
-        mapBlackOverlay.animate().alpha(0f)
+        black_overlay.animate().alpha(0f)
     }
 
     private fun createSelfMarker(position: LatLng) {
@@ -128,7 +133,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
         gMap.isIndoorEnabled = true
         gMap.setMinZoomPreference(MinZoom)
         gMap.uiSettings.setAllGesturesEnabled(false)
-        gMap.uiSettings.isZoomControlsEnabled = true
+//        gMap.uiSettings.isZoomControlsEnabled = true
     }
 
     private fun createLocationRequest(): LocationRequest{
