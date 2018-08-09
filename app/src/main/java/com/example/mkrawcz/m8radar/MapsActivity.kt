@@ -74,9 +74,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
 
     override fun onMapReady(googleMap: GoogleMap) {
         gMap = googleMap
+        locationUpdateCallback = LocationUpdateCallback(gMap)
+        
         setupMap()
         setupLocation()
-        locationUpdateCallback = LocationUpdateCallback(gMap)
     }
 
     private fun setupLocation() {
