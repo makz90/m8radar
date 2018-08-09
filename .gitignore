@@ -1,5 +1,8 @@
 # Built application files
 /*/build/
+build/kotlin/sessions/**
+build/kotlin/sessions/
+**/build/kotlin/sessions/
 
 # Crashlytics configuations
 com_crashlytics_export_strings.xml
