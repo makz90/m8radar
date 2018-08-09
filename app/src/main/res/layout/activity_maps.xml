@@ -17,7 +17,7 @@
         android:layout_alignEnd="@+id/radar_overlay" />
     <View
         android:id="@+id/green_overlay"
-        android:alpha="0.65"
+        android:alpha="0.45"
         android:background="@color/colorPrimary"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
