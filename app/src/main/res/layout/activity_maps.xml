@@ -21,4 +21,9 @@
         <!--android:background="@drawable/bg_inverted_circle_black"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent" />-->
+    <FrameLayout
+        android:id="@+id/mapBlackOverlay"
+        android:background="@android:color/black"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </RelativeLayout>

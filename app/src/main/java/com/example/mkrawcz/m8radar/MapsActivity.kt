@@ -22,26 +22,24 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_maps.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
 
     private lateinit var gMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mSensorManager: SensorManager
-    lateinit var selfLocation: Location
+
+    private val radarClient: RadarClient = MockRadarClient()
+    private val locationUpdateCallback = LocationUpdateCallback(this)
 
     var selfMarker: Marker? = null
-    private val radarClient: RadarClient
 
     companion object {
         const val REQUEST_LOCATION_ID = 1234
         const val REQUEST_CHECK_SETTINGS = 12345
         const val MinZoom = 10f
         const val DefaultZoom = 18f
-    }
-
-    init {
-        radarClient = MockRadarClient()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,20 +82,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListene
     private fun setupLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_ID)
+        } else {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location -> initializeSelfMarker(location) }
+            fusedLocationClient.requestLocationUpdates(createLocationRequest(), locationUpdateCallback, mainLooper)
         }
-
-        val myLocationCallback = LocationUpdateCallback(this)
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        fusedLocationClient.lastLocation.addOnSuccessListener { location -> initializeSelfMarker(location) }
-        fusedLocationClient.requestLocationUpdates(createLocationRequest(), myLocationCallback, mainLooper)
     }
 
-    private fun initializeSelfMarker(location: Location) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == REQUEST_LOCATION_ID) {
+            setupLocation()
+        }
+    }
+
+    fun initializeSelfMarker(location: Location) {
         val position = location.toLatLng()
         createSelfMarker(position)
         animateToPosition(position, DefaultZoom)
-        selfLocation = location
+        mapBlackOverlay.animate().alpha(0f)
     }
 
     private fun createSelfMarker(position: LatLng) {
